@@ -21,13 +21,22 @@ class TLU(DatasetBase):
         if found_root:
             self.root = found_root
             print(f"Detected dataset root at: {self.root}")
+            
+            # Smart image path detection
+            if os.path.isdir(os.path.join(self.root, 'tlu-states', 'images')):
+                self.image_dir = os.path.join(self.root, 'tlu-states', 'images')
+            elif os.path.isdir(os.path.join(self.root, 'images')):
+                self.image_dir = os.path.join(self.root, 'images')
+            else:
+                # If split.json is inside 'images' folder already
+                self.image_dir = self.root
         else:
             self.root = root
-            print(f"Warning: split.json not found in {root} or its parents.")
+            self.image_dir = os.path.join(self.root, 'tlu-states', 'images')
+            print(f"Warning: split.json not found. Using default image path: {self.image_dir}")
 
-        self.dataset_dir = os.path.join(self.root, 'tlu-states')
-        self.image_dir = os.path.join(self.dataset_dir, 'images')
         self.split_path = os.path.join(self.root, 'split.json')
+        print(f"Final Image Directory: {self.image_dir}")
 
         self.template = template
 
