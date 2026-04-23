@@ -9,6 +9,7 @@ from .food101 import Food101
 from .oxford_flowers import OxfordFlowers
 from .stanford_cars import StanfordCars
 from .imagenet import ImageNet
+from .tlu import TLU
 
 from .utils import build_data_loader
 import torchvision.transforms as transforms
@@ -26,6 +27,7 @@ dataset_list = {
     "oxford_flowers": OxfordFlowers,
     "stanford_cars": StanfordCars,
     "imagenet": ImageNet,
+    "tlu": TLU,
 }
 
 
