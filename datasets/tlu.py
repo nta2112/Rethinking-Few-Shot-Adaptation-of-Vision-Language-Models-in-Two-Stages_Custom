@@ -9,9 +9,25 @@ class TLU(DatasetBase):
     dataset_dir = 'tlu-states'
 
     def __init__(self, root, num_shots, setting="standard", seed=1):
-        self.dataset_dir = os.path.join(root, self.dataset_dir)
+        # Extremely robust path resolution: find where split.json actually is
+        current_check = root
+        found_root = None
+        for _ in range(4): # Check up to 4 levels up
+            if os.path.exists(os.path.join(current_check, 'split.json')):
+                found_root = current_check
+                break
+            current_check = os.path.dirname(current_check)
+        
+        if found_root:
+            self.root = found_root
+            print(f"Detected dataset root at: {self.root}")
+        else:
+            self.root = root
+            print(f"Warning: split.json not found in {root} or its parents.")
+
+        self.dataset_dir = os.path.join(self.root, 'tlu-states')
         self.image_dir = os.path.join(self.dataset_dir, 'images')
-        self.split_path = os.path.join(root, 'split.json')
+        self.split_path = os.path.join(self.root, 'split.json')
 
         self.template = template
 
