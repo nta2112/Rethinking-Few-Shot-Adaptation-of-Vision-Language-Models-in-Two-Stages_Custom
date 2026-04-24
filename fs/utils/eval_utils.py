@@ -105,11 +105,7 @@ def dump(result: dict, args: dict, decimals: int = 4):
 
     args["backbone"] = args["backbone"].replace("/", "-")
     
-    outpath = osp.join(
-        args["results_dir"], args["setting"], args["backbone"], args["dataset"], 
-        f"shots_{args['shots']}", f"seed_{args['seed']}", args['mode'], 
-        args["exp_name"]
-    )
+    outpath = osp.join(args["results_dir"], args["exp_name"])
     if not outpath.endswith(".csv"): outpath += ".csv"
     os.makedirs(osp.dirname(outpath), exist_ok=True)
 
