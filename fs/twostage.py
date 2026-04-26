@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -111,6 +112,30 @@ class SingleStreamClassifier(nn.Module):
         # then use the updated classifier to predict the current samples
         logits = self.logit_scale.exp() * x @ classifier.t()
         return logits
+
+
+def save_twostage(args, clip_model, classifier_param):
+    # we capture only the parameters that were actually trained
+    stage1_weights = {}
+    for name, param in clip_model.named_parameters():
+        if param.requires_grad:
+            stage1_weights[name] = param.data.cpu() # save to cpu to be device-agnostic
+
+    save_data = {
+        'stage1_peft': args.peft,
+        'stage1_weights': stage1_weights,
+        'stage2_classifier': classifier_param.data.cpu(),
+        'metadata': vars(args)
+    }
+
+    # directory management (reusing the logic from save_lora)
+    backbone = args.backbone.replace('/', '').replace('-', '').lower()
+    save_dir = os.path.join(args.save_path, backbone, args.dataset, f"{args.shots}shots", f"seed{args.seed}")
+    os.makedirs(save_dir, exist_ok=True)
+
+    save_path = os.path.join(save_dir, f"{args.filename}.pt")
+    torch.save(save_data, save_path)
+    print(f'Two-Stage model weights saved to {save_path}')
 
 
 @torch.no_grad()
@@ -308,6 +333,11 @@ def run_twostage(args, clip_model, logit_scale, dataset, train_loader, val_loade
             total_iters
         )
         if args.debug: break
+
+
+    # save the model if save_path is provided
+    if args.save_path is not None:
+        save_twostage(args, clip_model, model.classifier)
 
 
     # test after training
